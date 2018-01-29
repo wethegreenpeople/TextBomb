@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Annoy</string>
+    <string name="phoneNumber">Phone Number</string>
+    <string name="textAmount">Amount of texts</string>
+    <string name="buttonSend">send</string>
+    <string name="messageToSend">Message to send</string>
+    <string name="editTextStopMessage">Stop Message</string>
+
+    <string-array name="stopBombMessages">
+        <item>stop</item>
+        <item>quit</item>
+        <item>kaboom</item>
+        <item>please</item>
+        <item>"i'm begging"</item>
+    </string-array>
+</resources>
