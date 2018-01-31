@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
+import android.provider.Telephony;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.SmsManager;
@@ -29,35 +30,41 @@ import static xyz.uraqt.apps.annoy.R.id.textViewDelayLength;
 
 public class MainActivity extends AppCompatActivity {
 
+    static String bombDefuse = null;
+    static Handler handler = new Handler(); // setting up a handler for a delay
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         CheckSMSPermissions();
         UpdateDelayBar();
-
-        // Setting up the listener for incoming text messages; for the bomb defuser.
-        Intent listener = new Intent(this, SmsListener.class);
-        listener.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startService(listener);
     }
 
     // Sending our textbomb here
     public void SendMessages(View view) {
+        // Setting up the listener for incoming text messages; for the bomb defuser.
+        Intent listener = new Intent(this, SmsListener.class);
+        listener.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startService(listener);
+
         final String phoneNumber = ((EditText) findViewById(R.id.editTextPhoneNumber)).getText().toString();
         final int bombAmount = Integer.parseInt(((EditText) findViewById(R.id.editTextAmountOfTexts)).getText().toString());
         final String messageToSend = ((EditText) findViewById(R.id.editTextMessageToSend)).getText().toString();
-        final Handler handler = new Handler(); // setting up a handler for a delay
         final SmsManager smsManager = SmsManager.getDefault();
         final int delayAmount = ((SeekBar)findViewById(R.id.seekBarMessageDelay)).getProgress();
+        bombDefuse = ((EditText) findViewById(R.id.editTextStopMessage)).getText().toString();
 
         final Runnable runnable = new Runnable() {
             int count =  0;
             public void run() {
-                smsManager.sendTextMessage(phoneNumber, "ME", messageToSend, null, null);
-
-                if (count++ < bombAmount)
+                if (bombDefuse.equals(SmsListener.messageBody))
                 {
+                    Toast.makeText(getApplicationContext(), "Bomb Defused", Toast.LENGTH_SHORT).show();
+                }
+                else if (count++ < bombAmount && !bombDefuse.equals(SmsListener.messageBody))
+                {
+                    smsManager.sendTextMessage(phoneNumber, "ME", messageToSend, null, null);
                     handler.postDelayed(this, (delayAmount * 1000));
                 }
             }
