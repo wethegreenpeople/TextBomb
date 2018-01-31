@@ -59,6 +59,16 @@
         android:selectAllOnFocus="true"
         android:singleLine="true" />
 
+    <TextView
+        android:id="@+id/textViewDelayLength"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/editTextStopMessage"
+        android:layout_marginTop="14dp"
+        android:text="Delay: 0 seconds" />
+
     <SeekBar
         android:id="@+id/seekBarMessageDelay"
         android:layout_width="wrap_content"
@@ -84,15 +94,5 @@
         android:inputType="textPersonName"
         android:selectAllOnFocus="true"
         android:singleLine="true" />
-
-    <TextView
-        android:id="@+id/textViewDelayLength"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/editTextStopMessage"
-        android:layout_marginTop="14dp"
-        android:text="Delay: 0 seconds" />
 
 </RelativeLayout>
