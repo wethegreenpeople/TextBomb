@@ -38,13 +38,13 @@
         android:id="@+id/buttonSend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:elevation="0dp"
-        android:onClick="SendMessages"
-        android:text="@string/buttonSend"
-        android:layout_marginTop="16dp"
-        android:layout_below="@+id/seekBarMessageDelay"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/seekBarMessageDelay"
+        android:layout_marginTop="16dp"
+        android:elevation="0dp"
+        android:onClick="PressSend"
+        android:text="@string/buttonSend" />
 
     <EditText
         android:id="@+id/editTextMessageToSend"
@@ -94,5 +94,15 @@
         android:inputType="textPersonName"
         android:selectAllOnFocus="true"
         android:singleLine="true" />
+
+    <Spinner
+        android:id="@+id/spinnerMessageToSend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/editTextStopMessage"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/editTextAmountOfTexts"
+        android:layout_toEndOf="@+id/editTextAmountOfTexts"
+        android:entries="@array/sendMessageChoice" />
 
 </RelativeLayout>
