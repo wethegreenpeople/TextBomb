@@ -6,11 +6,9 @@
     <string name="messageToSend">Message to send</string>
     <string name="editTextStopMessage">Stop Message</string>
 
-    <string-array name="stopBombMessages">
-        <item>stop</item>
-        <item>quit</item>
-        <item>kaboom</item>
-        <item>please</item>
-        <item>"i'm begging"</item>
+    <string-array name="sendMessageChoice">
+        <item>Custom</item>
+        <item>Cat Fact</item>
+        <item>Dog Fact</item>
     </string-array>
 </resources>

@@ -2,6 +2,7 @@ package xyz.uraqt.apps.annoy;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
@@ -11,25 +12,38 @@ import android.provider.Telephony;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.SmsManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.os.AsyncTask;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.ref.Reference;
+import java.net.URL;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import static android.R.attr.value;
 import static android.R.attr.y;
 import static android.R.id.edit;
+import static xyz.uraqt.apps.annoy.MainActivity.bombDefuse;
+import static xyz.uraqt.apps.annoy.MainActivity.handler;
 import static xyz.uraqt.apps.annoy.R.id.editTextPhoneNumber;
 import static xyz.uraqt.apps.annoy.R.id.seekBarMessageDelay;
 import static xyz.uraqt.apps.annoy.R.id.textViewDelayLength;
+import static xyz.uraqt.apps.annoy.R.string.messageToSend;
 
 public class MainActivity extends AppCompatActivity {
-
     static String bombDefuse = null;
     static Handler handler = new Handler(); // setting up a handler for a delay
 
@@ -41,19 +55,34 @@ public class MainActivity extends AppCompatActivity {
         UpdateDelayBar();
     }
 
-    // Sending our textbomb here
-    public void SendMessages(View view) {
-        // Setting up the listener for incoming text messages; for the bomb defuser.
-        Intent listener = new Intent(this, SmsListener.class);
-        listener.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startService(listener);
+    public void PressSend(View view)
+    {
+        String typeOfMessage = ((Spinner) findViewById(R.id.spinnerMessageToSend)).getSelectedItem().toString();
+        if (typeOfMessage.equals("Custom"))
+        {
+            SendCustomMessage();
+        }
+        else if (typeOfMessage.equals("Cat Fact"))
+        {
+            final String phoneNumber = ((EditText) findViewById(R.id.editTextPhoneNumber)).getText().toString();
+            final int bombAmount = Integer.parseInt(((EditText) findViewById(R.id.editTextAmountOfTexts)).getText().toString());
+            final int delayAmount = ((SeekBar) findViewById(R.id.seekBarMessageDelay)).getProgress();
+            bombDefuse = ((EditText) findViewById(R.id.editTextStopMessage)).getText().toString();
 
+            GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse);
+            animalFact.execute();
+        }
+    }
+
+    // Sending our textbomb here
+    public void SendCustomMessage() {
+        InitListener();
         final String phoneNumber = ((EditText) findViewById(R.id.editTextPhoneNumber)).getText().toString();
         final int bombAmount = Integer.parseInt(((EditText) findViewById(R.id.editTextAmountOfTexts)).getText().toString());
         final String messageToSend = ((EditText) findViewById(R.id.editTextMessageToSend)).getText().toString();
-        final SmsManager smsManager = SmsManager.getDefault();
         final int delayAmount = ((SeekBar)findViewById(R.id.seekBarMessageDelay)).getProgress();
         bombDefuse = ((EditText) findViewById(R.id.editTextStopMessage)).getText().toString();
+        final SmsManager smsManager = SmsManager.getDefault();
 
         final Runnable runnable = new Runnable() {
             int count =  0;
@@ -72,6 +101,14 @@ public class MainActivity extends AppCompatActivity {
         handler.post(runnable);
 
         Toast.makeText(getApplicationContext(), "Text bomb sent", Toast.LENGTH_SHORT).show();
+    }
+
+    public void InitListener()
+    {
+        // Setting up the listener for incoming text messages; for the bomb defuser.
+        Intent listener = new Intent(this, SmsListener.class);
+        listener.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startService(listener);
     }
 
     public boolean CheckSMSPermissions() {
@@ -113,3 +150,66 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 
+class GetAnimalFact extends AsyncTask<Void, Void, String> {
+    private Context ccontext;
+
+    String phoneNumber, bombDefuse = null;
+    int bombAmount, delayAmount;
+
+    public GetAnimalFact(Context context, String phoneNumber, int bombAmount, int delayAmount, String bombDefuse)
+    {
+        this.phoneNumber = phoneNumber;
+        this.bombAmount = bombAmount;
+        this.delayAmount = delayAmount;
+        this.bombDefuse = bombDefuse;
+        ccontext = context;
+    }
+
+    @Override
+    protected String doInBackground(Void ... params) {
+        OkHttpClient httpClient = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("http://uraqt.xyz/api/animalfacts/animal/cat")
+                .build();
+
+        Response response = null;
+        String body = null;
+        try {
+            response = httpClient.newCall(request).execute();
+            body = response.body().string();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return body;
+    }
+
+    @Override
+    protected void onPostExecute(String fact)
+    {
+        SendAnimalFact(fact, phoneNumber, bombAmount, delayAmount);
+    }
+
+    private void SendAnimalFact(final String messageToSend, final String phoneNumber, final int bombAmount, final int delayAmount)
+    {
+        final SmsManager smsManager = SmsManager.getDefault();
+
+        final Runnable runnable = new Runnable() {
+            int count =  0;
+            public void run() {
+                if (bombDefuse.equals(SmsListener.messageBody))
+                {
+                    Toast.makeText(ccontext, "Bomb Defused", Toast.LENGTH_SHORT).show();
+                }
+                else if (count++ < bombAmount && !bombDefuse.equals(SmsListener.messageBody))
+                {
+                    smsManager.sendTextMessage(phoneNumber, "ME", messageToSend, null, null);
+                    handler.postDelayed(this, (delayAmount * 1000));
+                }
+            }
+        };
+        handler.post(runnable);
+
+        Toast.makeText(ccontext, "Text bomb sent", Toast.LENGTH_SHORT).show();
+    }
+}
