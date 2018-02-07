@@ -1,4 +1,4 @@
-package xyz.uraqt.apps.annoy;
+package xyz.uraqt.apps.textbomb;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

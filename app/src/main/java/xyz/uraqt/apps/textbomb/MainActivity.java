@@ -1,49 +1,31 @@
-package xyz.uraqt.apps.annoy;
+package xyz.uraqt.apps.textbomb;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
-import android.provider.Telephony;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.os.AsyncTask;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.ref.Reference;
-import java.net.URL;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import static android.R.attr.value;
-import static android.R.attr.y;
-import static android.R.id.edit;
-import static xyz.uraqt.apps.annoy.MainActivity.bombDefuse;
-import static xyz.uraqt.apps.annoy.MainActivity.handler;
-import static xyz.uraqt.apps.annoy.R.id.editTextPhoneNumber;
-import static xyz.uraqt.apps.annoy.R.id.seekBarMessageDelay;
-import static xyz.uraqt.apps.annoy.R.id.textViewDelayLength;
-import static xyz.uraqt.apps.annoy.R.string.messageToSend;
+import static xyz.uraqt.apps.textbomb.MainActivity.handler;
 
 public class MainActivity extends AppCompatActivity {
     static String bombDefuse = "";
@@ -64,29 +46,76 @@ public class MainActivity extends AppCompatActivity {
         String typeOfMessage = ((Spinner) findViewById(R.id.spinnerMessageToSend)).getSelectedItem().toString();
         String animal = null;
 
+        final String phoneNumber = ((EditText) findViewById(R.id.editTextPhoneNumber)).getText().toString();
+        final int bombAmount = Integer.parseInt(((EditText) findViewById(R.id.editTextAmountOfTexts)).getText().toString());
+        final int delayAmount = ((SeekBar) findViewById(R.id.seekBarMessageDelay)).getProgress();
+        final String messageToSend = ((EditText) findViewById(R.id.editTextMessageToSend)).getText().toString();
+        bombDefuse = ((EditText) findViewById(R.id.editTextStopMessage)).getText().toString();
+
         if (typeOfMessage.equals("Custom"))
         {
-            SendCustomMessage();
+            if (CheckLimits(phoneNumber, bombAmount, messageToSend))
+            {
+                SendCustomMessage();
+                SwapSendButton(1);
+            }
         }
         else if (!typeOfMessage.equals("Custom"))
         {
-            animal = typeOfMessage.split(" ")[0].toString().toLowerCase();
-            final String phoneNumber = ((EditText) findViewById(R.id.editTextPhoneNumber)).getText().toString();
-            final int bombAmount = Integer.parseInt(((EditText) findViewById(R.id.editTextAmountOfTexts)).getText().toString());
-            final int delayAmount = ((SeekBar) findViewById(R.id.seekBarMessageDelay)).getProgress();
-            bombDefuse = ((EditText) findViewById(R.id.editTextStopMessage)).getText().toString();
+            if (CheckLimits(phoneNumber, bombAmount))
+            {
+                animal = typeOfMessage.split(" ")[0].toString().toLowerCase();
 
-            GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse, animal);
-            animalFact.execute();
+                GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse, animal);
+                animalFact.execute();
+                SwapSendButton(1);
+            }
         }
-
-        SwapSendButton(1);
     }
 
     public void PressStop(View view)
     {
         this.handler.removeCallbacksAndMessages(null);
         SwapSendButton(0);
+    }
+
+    public Boolean CheckLimits(String phoneNumber, int bombAmount)
+    {
+        Boolean passed = true;
+        if (phoneNumber.length() < 9 || phoneNumber.length() > 11)
+        {
+            passed = false;
+            Toast.makeText(getApplicationContext(), "Invalid phone number. Re-enter valid 10 digit phone number", Toast.LENGTH_LONG).show();
+        }
+        if (bombAmount > 50)
+        {
+            passed = false;
+            Toast.makeText(getApplicationContext(), "Cannot send more than 50 texts at a time", Toast.LENGTH_LONG).show();
+        }
+
+        return passed;
+    }
+
+    public Boolean CheckLimits(String phoneNumber, int bombAmount, String messageToSend)
+    {
+        Boolean passed = true;
+        if (phoneNumber.length() < 9 || phoneNumber.length() > 11)
+        {
+            passed = false;
+            Toast.makeText(getApplicationContext(), "Invalid phone number. Re-enter valid 10 digit phone number", Toast.LENGTH_LONG).show();
+        }
+        if (bombAmount > 50)
+        {
+            passed = false;
+            Toast.makeText(getApplicationContext(), "Cannot send more than 50 texts at a time", Toast.LENGTH_LONG).show();
+        }
+        if (messageToSend.length() > 140)
+        {
+            passed = false;
+            Toast.makeText(getApplicationContext(), "Bomb message cannot be greater than 140 characters", Toast.LENGTH_LONG).show();
+        }
+
+        return passed;
     }
 
     public void SwapSendButton(int swap)
@@ -258,6 +287,11 @@ class GetAnimalFact extends AsyncTask<Void, Void, String[]> {
         final Runnable runnable = new Runnable() {
             int count =  0;
             public void run() {
+                if (count >= bombAmount)
+                {
+                    MainActivity main = new MainActivity();
+                    main.SwapSendButton(0);
+                }
                 if (bombDefuse.equals(SmsListener.messageBody))
                 {
                     Toast.makeText(ccontext, "Bomb Defused", Toast.LENGTH_SHORT).show();

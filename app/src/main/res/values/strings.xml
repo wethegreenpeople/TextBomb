@@ -9,7 +9,9 @@
 
     <string-array name="sendMessageChoice">
         <item>Custom</item>
-        <item>Cat Fact</item>
-        <item>Dog Fact</item>
+        <item>Cat Facts</item>
+        <item>Dog Facts</item>
+        <item>Cow Facts</item>
+        <item>Jellyfish Facts</item>
     </string-array>
 </resources>
