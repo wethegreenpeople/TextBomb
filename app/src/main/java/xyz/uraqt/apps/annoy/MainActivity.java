@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
@@ -53,30 +54,34 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         CheckSMSPermissions();
         UpdateDelayBar();
+        MonitorSpinner();
     }
 
     public void PressSend(View view)
     {
+        InitListener();
         String typeOfMessage = ((Spinner) findViewById(R.id.spinnerMessageToSend)).getSelectedItem().toString();
+        String animal = null;
+
         if (typeOfMessage.equals("Custom"))
         {
             SendCustomMessage();
         }
-        else if (typeOfMessage.equals("Cat Fact"))
+        else if (!typeOfMessage.equals("Custom"))
         {
+            animal = typeOfMessage.split(" ")[0].toString().toLowerCase();
             final String phoneNumber = ((EditText) findViewById(R.id.editTextPhoneNumber)).getText().toString();
             final int bombAmount = Integer.parseInt(((EditText) findViewById(R.id.editTextAmountOfTexts)).getText().toString());
             final int delayAmount = ((SeekBar) findViewById(R.id.seekBarMessageDelay)).getProgress();
             bombDefuse = ((EditText) findViewById(R.id.editTextStopMessage)).getText().toString();
 
-            GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse);
+            GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse, animal);
             animalFact.execute();
         }
     }
 
     // Sending our textbomb here
     public void SendCustomMessage() {
-        InitListener();
         final String phoneNumber = ((EditText) findViewById(R.id.editTextPhoneNumber)).getText().toString();
         final int bombAmount = Integer.parseInt(((EditText) findViewById(R.id.editTextAmountOfTexts)).getText().toString());
         final String messageToSend = ((EditText) findViewById(R.id.editTextMessageToSend)).getText().toString();
@@ -91,10 +96,11 @@ public class MainActivity extends AppCompatActivity {
                 {
                     Toast.makeText(getApplicationContext(), "Bomb Defused", Toast.LENGTH_SHORT).show();
                 }
-                else if (count++ < bombAmount && !bombDefuse.equals(SmsListener.messageBody))
+                else if (count < bombAmount && !bombDefuse.equals(SmsListener.messageBody))
                 {
                     smsManager.sendTextMessage(phoneNumber, "ME", messageToSend, null, null);
                     handler.postDelayed(this, (delayAmount * 1000));
+                    ++count;
                 }
             }
         };
@@ -148,49 +154,77 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void MonitorSpinner()
+    {
+        Spinner spinner = (Spinner) findViewById(R.id.spinnerMessageToSend);
+        final EditText message = (EditText) findViewById(R.id.editTextMessageToSend);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String item = adapterView.getItemAtPosition(i).toString();
+                if (!item.equals("Custom"))
+                {
+                    message.setEnabled(false);
+                }
+                else if (item.equals("Custom"))
+                {
+                    message.setEnabled(true);
+                }
+            }
+
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                return;
+            }
+        });
+    }
 }
 
-class GetAnimalFact extends AsyncTask<Void, Void, String> {
+class GetAnimalFact extends AsyncTask<Void, Void, String[]> {
     private Context ccontext;
 
-    String phoneNumber, bombDefuse = null;
+    String phoneNumber, bombDefuse, animal = null;
     int bombAmount, delayAmount;
 
-    public GetAnimalFact(Context context, String phoneNumber, int bombAmount, int delayAmount, String bombDefuse)
+    public GetAnimalFact(Context context, String phoneNumber, int bombAmount, int delayAmount, String bombDefuse, String animal)
     {
         this.phoneNumber = phoneNumber;
         this.bombAmount = bombAmount;
         this.delayAmount = delayAmount;
         this.bombDefuse = bombDefuse;
+        this.animal = animal;
         ccontext = context;
     }
 
     @Override
-    protected String doInBackground(Void ... params) {
+    protected String[] doInBackground(Void ... params) {
         OkHttpClient httpClient = new OkHttpClient();
         Request request = new Request.Builder()
-                .url("http://uraqt.xyz/api/animalfacts/animal/cat")
+                .url("http://uraqt.xyz/api/animalfacts/animal/" + animal)
                 .build();
 
         Response response = null;
-        String body = null;
+        String[] facts = new String[bombAmount];
         try {
-            response = httpClient.newCall(request).execute();
-            body = response.body().string();
+            for (int i = 0; i < bombAmount; ++i)
+            {
+                response = httpClient.newCall(request).execute();
+                facts[i] = response.body().string();
+                Log.i("textbomb", facts.toString());
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return body;
+        return facts;
     }
 
     @Override
-    protected void onPostExecute(String fact)
+    protected void onPostExecute(String[] facts)
     {
-        SendAnimalFact(fact, phoneNumber, bombAmount, delayAmount);
+        SendAnimalFact(facts, phoneNumber, bombAmount, delayAmount);
     }
 
-    private void SendAnimalFact(final String messageToSend, final String phoneNumber, final int bombAmount, final int delayAmount)
+    private void SendAnimalFact(final String[] messageToSend, final String phoneNumber, final int bombAmount, final int delayAmount)
     {
         final SmsManager smsManager = SmsManager.getDefault();
 
@@ -200,11 +234,13 @@ class GetAnimalFact extends AsyncTask<Void, Void, String> {
                 if (bombDefuse.equals(SmsListener.messageBody))
                 {
                     Toast.makeText(ccontext, "Bomb Defused", Toast.LENGTH_SHORT).show();
+                    Log.i("Sending", "Textbomb defused");
                 }
-                else if (count++ < bombAmount && !bombDefuse.equals(SmsListener.messageBody))
+                else if (count < bombAmount && !bombDefuse.equals(SmsListener.messageBody))
                 {
-                    smsManager.sendTextMessage(phoneNumber, "ME", messageToSend, null, null);
+                    smsManager.sendTextMessage(phoneNumber, "ME", messageToSend[count], null, null);
                     handler.postDelayed(this, (delayAmount * 1000));
+                    ++count;
                 }
             }
         };
