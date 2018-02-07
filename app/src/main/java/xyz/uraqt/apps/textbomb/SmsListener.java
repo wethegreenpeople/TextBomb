@@ -1,11 +1,10 @@
-package xyz.uraqt.apps.annoy;
+package xyz.uraqt.apps.textbomb;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.provider.Telephony;
 import android.telephony.SmsMessage;
-import android.widget.Toast;
 
 
 public class SmsListener extends BroadcastReceiver {
