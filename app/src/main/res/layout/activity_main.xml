@@ -10,6 +10,19 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="xyz.uraqt.apps.annoy.MainActivity">
 
+    <Button
+        android:id="@+id/buttonStop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/seekBarMessageDelay"
+        android:layout_marginTop="14dp"
+        android:elevation="0dp"
+        android:enabled="true"
+        android:onClick="PressStop"
+        android:text="@string/buttonStop"
+        android:visibility="gone" />
+
     <EditText
         android:id="@+id/editTextPhoneNumber"
         android:layout_width="wrap_content"
@@ -38,13 +51,12 @@
         android:id="@+id/buttonSend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/seekBarMessageDelay"
-        android:layout_marginTop="16dp"
         android:elevation="0dp"
         android:onClick="PressSend"
-        android:text="@string/buttonSend" />
+        android:text="@string/buttonSend"
+        android:layout_marginTop="12dp"
+        android:layout_below="@+id/seekBarMessageDelay"
+        android:layout_alignParentStart="true" />
 
     <EditText
         android:id="@+id/editTextMessageToSend"
@@ -101,8 +113,11 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/editTextStopMessage"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="false"
+        android:layout_alignWithParentIfMissing="false"
         android:layout_below="@+id/editTextAmountOfTexts"
         android:layout_toEndOf="@+id/editTextAmountOfTexts"
+        android:duplicateParentState="false"
         android:entries="@array/sendMessageChoice" />
 
 </RelativeLayout>

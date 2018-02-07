@@ -5,6 +5,7 @@
     <string name="buttonSend">send</string>
     <string name="messageToSend">Message to send</string>
     <string name="editTextStopMessage">Stop Message</string>
+    <string name="buttonStop">Stop</string>
 
     <string-array name="sendMessageChoice">
         <item>Custom</item>
