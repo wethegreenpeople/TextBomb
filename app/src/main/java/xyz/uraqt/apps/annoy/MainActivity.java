@@ -15,6 +15,7 @@ import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
@@ -45,7 +46,7 @@ import static xyz.uraqt.apps.annoy.R.id.textViewDelayLength;
 import static xyz.uraqt.apps.annoy.R.string.messageToSend;
 
 public class MainActivity extends AppCompatActivity {
-    static String bombDefuse = null;
+    static String bombDefuse = "";
     static Handler handler = new Handler(); // setting up a handler for a delay
 
     @Override
@@ -78,6 +79,28 @@ public class MainActivity extends AppCompatActivity {
             GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse, animal);
             animalFact.execute();
         }
+
+        SwapSendButton(1);
+    }
+
+    public void PressStop(View view)
+    {
+        this.handler.removeCallbacksAndMessages(null);
+        SwapSendButton(0);
+    }
+
+    public void SwapSendButton(int swap)
+    {
+        if (swap == 0)
+        {
+            findViewById(R.id.buttonSend).setVisibility(View.VISIBLE);
+            findViewById(R.id.buttonStop).setVisibility(View.GONE);
+        }
+        else if (swap == 1)
+        {
+            findViewById(R.id.buttonSend).setVisibility(View.GONE);
+            findViewById(R.id.buttonStop).setVisibility(View.VISIBLE);
+        }
     }
 
     // Sending our textbomb here
@@ -92,6 +115,10 @@ public class MainActivity extends AppCompatActivity {
         final Runnable runnable = new Runnable() {
             int count =  0;
             public void run() {
+                if (count >= bombAmount)
+                {
+                    SwapSendButton(0);
+                }
                 if (bombDefuse.equals(SmsListener.messageBody))
                 {
                     Toast.makeText(getApplicationContext(), "Bomb Defused", Toast.LENGTH_SHORT).show();
