@@ -8,7 +8,7 @@ import android.telephony.SmsMessage;
 
 
 public class SmsListener extends BroadcastReceiver {
-    static String messageBody = "";
+    static String messageBody = null;
 
     @Override
     public void onReceive(Context context, Intent intent) {
