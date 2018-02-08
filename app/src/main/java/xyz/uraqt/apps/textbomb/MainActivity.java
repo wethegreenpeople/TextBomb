@@ -42,26 +42,30 @@ public class MainActivity extends AppCompatActivity {
 
     public void PressSend(View view)
     {
-        InitListener();
+        InitListener(); // Listener for our defusal message
         String typeOfMessage = ((Spinner) findViewById(R.id.spinnerMessageToSend)).getSelectedItem().toString();
         String animal = null;
 
-        final String phoneNumber = ((EditText) findViewById(R.id.editTextPhoneNumber)).getText().toString();
-        final int bombAmount = Integer.parseInt(((EditText) findViewById(R.id.editTextAmountOfTexts)).getText().toString());
-        final int delayAmount = ((SeekBar) findViewById(R.id.seekBarMessageDelay)).getProgress();
-        final String messageToSend = ((EditText) findViewById(R.id.editTextMessageToSend)).getText().toString();
+        String phoneNumber = ((EditText) findViewById(R.id.editTextPhoneNumber)).getText().toString();
+        int bombAmount = Integer.parseInt(((EditText) findViewById(R.id.editTextAmountOfTexts)).getText().toString());
+        int delayAmount = ((SeekBar) findViewById(R.id.seekBarMessageDelay)).getProgress();
+        String messageToSend = ((EditText) findViewById(R.id.editTextMessageToSend)).getText().toString();
         bombDefuse = ((EditText) findViewById(R.id.editTextStopMessage)).getText().toString();
 
+        // Are we sending a custom message?
         if (typeOfMessage.equals("Custom"))
         {
             if (CheckLimits(phoneNumber, bombAmount, messageToSend))
             {
-                SendCustomMessage();
+                SendCustomMessage(phoneNumber, bombAmount, messageToSend, delayAmount, bombDefuse);
                 SwapSendButton(1);
             }
         }
+        // We're sending an animal fact
         else if (!typeOfMessage.equals("Custom"))
         {
+            // We're taking the first word from our spinner and that's our animal that we're requesting
+            // facts for
             animal = typeOfMessage.split(" ")[0].toString().toLowerCase();
 
             GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse, animal, this);
@@ -70,12 +74,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Cancels our textbomb
     public void PressStop(View view)
     {
         this.handler.removeCallbacksAndMessages(null);
         SwapSendButton(0);
     }
 
+    // Limits for this version of the app
+    // This method does not verify message length
     public Boolean CheckLimits(String phoneNumber, int bombAmount)
     {
         Boolean passed = true;
@@ -93,6 +100,8 @@ public class MainActivity extends AppCompatActivity {
         return passed;
     }
 
+    // Limits for this version of the app
+    // This method verifies message length
     public Boolean CheckLimits(String phoneNumber, int bombAmount, String messageToSend)
     {
         Boolean passed = true;
@@ -115,6 +124,9 @@ public class MainActivity extends AppCompatActivity {
         return passed;
     }
 
+    // Swapping our send button with our stop button
+    // 0 = send
+    // 1 = stop
     public void SwapSendButton(int swap)
     {
         if (swap == 0)
@@ -130,30 +142,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Sending our textbomb here
-    public void SendCustomMessage() {
-        final String phoneNumber = ((EditText) findViewById(R.id.editTextPhoneNumber)).getText().toString();
-        final int bombAmount = Integer.parseInt(((EditText) findViewById(R.id.editTextAmountOfTexts)).getText().toString());
-        final String messageToSend = ((EditText) findViewById(R.id.editTextMessageToSend)).getText().toString();
-        final int delayAmount = ((SeekBar)findViewById(R.id.seekBarMessageDelay)).getProgress();
-        bombDefuse = ((EditText) findViewById(R.id.editTextStopMessage)).getText().toString();
+    public void SendCustomMessage(final String phoneNumber, final int bombAmount, final String messageToSend, final int delayAmount, final String bombDefuse) {
         final SmsManager smsManager = SmsManager.getDefault();
 
         final Runnable runnable = new Runnable() {
-            int count =  0;
+            int count =  0; // count of how many times we've sent a message
             public void run() {
+                // If we've sent all the messages
                 if (count >= bombAmount)
                 {
                     SwapSendButton(0);
                 }
+                // If we get our defuseal text
                 if (bombDefuse.equals(SmsListener.messageBody))
                 {
                     Toast.makeText(getApplicationContext(), "Bomb Defused", Toast.LENGTH_SHORT).show();
                 }
                 else if (count < bombAmount && !bombDefuse.equals(SmsListener.messageBody))
                 {
-                    smsManager.sendTextMessage(phoneNumber, "ME", messageToSend, null, null);
-                    handler.postDelayed(this, (delayAmount * 1000));
-                    ++count;
+                    // a delay of 0 doesn't work IRL
+                    // So in truth the quickest you can send a text bomb is 1 second apart
+                    if (delayAmount < 1)
+                    {
+                        smsManager.sendTextMessage(phoneNumber, "ME", messageToSend, null, null);
+                        handler.postDelayed(this, ((delayAmount + 1) * 1000));
+                        ++count;
+                    }
+                    else
+                    {
+                        smsManager.sendTextMessage(phoneNumber, "ME", messageToSend, null, null);
+                        handler.postDelayed(this, (delayAmount * 1000));
+                        ++count;
+                    }
                 }
             }
         };
@@ -208,6 +228,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // Checking the value in our spinner
     private void MonitorSpinner()
     {
         Spinner spinner = (Spinner) findViewById(R.id.spinnerMessageToSend);
@@ -215,6 +236,8 @@ public class MainActivity extends AppCompatActivity {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 String item = adapterView.getItemAtPosition(i).toString();
+                // If we're not sending a custom message, we're not allowing the user
+                // to type anything into the editTextBox for custom message.
                 if (!item.equals("Custom"))
                 {
                     message.setEnabled(false);
@@ -232,6 +255,7 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 
+// Grabbing our animal fact
 class GetAnimalFact extends AsyncTask<Void, Void, String[]> {
     private Context ccontext;
 
@@ -258,11 +282,16 @@ class GetAnimalFact extends AsyncTask<Void, Void, String[]> {
                 .build();
 
         Response response = null;
+        // We're grabbing all the facts we need at one time, storing them into an array
+        // and then reading our facts out of the array when we send the text bomb
         String[] facts = new String[bombAmount];
         try {
             for (int i = 0; i < bombAmount; ++i)
             {
                 response = httpClient.newCall(request).execute();
+                // If we come back and change this and verify the length of the fact here
+                // we can grab a new fact if the length is too long to send via sms
+                // as of right now we're just not sending facts that are longer than 140 chars
                 facts[i] = response.body().string();
                 Log.i("textbomb", facts.toString());
             }
@@ -299,9 +328,18 @@ class GetAnimalFact extends AsyncTask<Void, Void, String[]> {
                 {
                     if (main.CheckLimits(phoneNumber, bombAmount, messageToSend[count]))
                     {
-                        smsManager.sendTextMessage(phoneNumber, "ME", messageToSend[count], null, null);
-                        handler.postDelayed(this, (delayAmount * 1000));
-                        ++count;
+                        if (delayAmount < 1)
+                        {
+                            smsManager.sendTextMessage(phoneNumber, "ME", messageToSend[count], null, null);
+                            handler.postDelayed(this, ((delayAmount + 1) * 1000));
+                            ++count;
+                        }
+                        else
+                        {
+                            smsManager.sendTextMessage(phoneNumber, "ME", messageToSend[count], null, null);
+                            handler.postDelayed(this, (delayAmount * 1000));
+                            ++count;
+                        }
                     }
                     else
                     {
