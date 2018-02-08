@@ -28,7 +28,7 @@ import okhttp3.Response;
 import static xyz.uraqt.apps.textbomb.MainActivity.handler;
 
 public class MainActivity extends AppCompatActivity {
-    static String bombDefuse = "";
+    static String bombDefuse = null;
     static Handler handler = new Handler(); // setting up a handler for a delay
 
     @Override
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
             {
                 animal = typeOfMessage.split(" ")[0].toString().toLowerCase();
 
-                GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse, animal);
+                GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse, animal, this);
                 animalFact.execute();
                 SwapSendButton(1);
             }
@@ -240,14 +240,16 @@ class GetAnimalFact extends AsyncTask<Void, Void, String[]> {
 
     String phoneNumber, bombDefuse, animal = null;
     int bombAmount, delayAmount;
+    public MainActivity main;
 
-    public GetAnimalFact(Context context, String phoneNumber, int bombAmount, int delayAmount, String bombDefuse, String animal)
+    public GetAnimalFact(Context context, String phoneNumber, int bombAmount, int delayAmount, String bombDefuse, String animal, MainActivity main)
     {
         this.phoneNumber = phoneNumber;
         this.bombAmount = bombAmount;
         this.delayAmount = delayAmount;
         this.bombDefuse = bombDefuse;
         this.animal = animal;
+        this.main = main;
         ccontext = context;
     }
 
@@ -277,10 +279,10 @@ class GetAnimalFact extends AsyncTask<Void, Void, String[]> {
     @Override
     protected void onPostExecute(String[] facts)
     {
-        SendAnimalFact(facts, phoneNumber, bombAmount, delayAmount);
+        SendAnimalFact(facts, phoneNumber, bombAmount, delayAmount, main);
     }
 
-    private void SendAnimalFact(final String[] messageToSend, final String phoneNumber, final int bombAmount, final int delayAmount)
+    private void SendAnimalFact(final String[] messageToSend, final String phoneNumber, final int bombAmount, final int delayAmount, final MainActivity main)
     {
         final SmsManager smsManager = SmsManager.getDefault();
 
@@ -289,7 +291,6 @@ class GetAnimalFact extends AsyncTask<Void, Void, String[]> {
             public void run() {
                 if (count >= bombAmount)
                 {
-                    MainActivity main = new MainActivity();
                     main.SwapSendButton(0);
                 }
                 if (bombDefuse.equals(SmsListener.messageBody))
