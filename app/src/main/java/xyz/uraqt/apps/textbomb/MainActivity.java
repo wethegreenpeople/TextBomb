@@ -62,14 +62,11 @@ public class MainActivity extends AppCompatActivity {
         }
         else if (!typeOfMessage.equals("Custom"))
         {
-            if (CheckLimits(phoneNumber, bombAmount))
-            {
-                animal = typeOfMessage.split(" ")[0].toString().toLowerCase();
+            animal = typeOfMessage.split(" ")[0].toString().toLowerCase();
 
-                GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse, animal, this);
-                animalFact.execute();
-                SwapSendButton(1);
-            }
+            GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse, animal, this);
+            animalFact.execute();
+            SwapSendButton(1);
         }
     }
 
@@ -300,9 +297,17 @@ class GetAnimalFact extends AsyncTask<Void, Void, String[]> {
                 }
                 else if (count < bombAmount && !bombDefuse.equals(SmsListener.messageBody))
                 {
-                    smsManager.sendTextMessage(phoneNumber, "ME", messageToSend[count], null, null);
-                    handler.postDelayed(this, (delayAmount * 1000));
-                    ++count;
+                    if (main.CheckLimits(phoneNumber, bombAmount, messageToSend[count]))
+                    {
+                        smsManager.sendTextMessage(phoneNumber, "ME", messageToSend[count], null, null);
+                        handler.postDelayed(this, (delayAmount * 1000));
+                        ++count;
+                    }
+                    else
+                    {
+                        handler.postDelayed(this, (delayAmount * 1000));
+                        ++count;
+                    }
                 }
             }
         };
