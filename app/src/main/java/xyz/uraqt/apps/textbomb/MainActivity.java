@@ -52,16 +52,7 @@ public class MainActivity extends AppCompatActivity {
         CheckSMSPermissions();
         UpdateDelayBar();
         MonitorSpinner();
-        Iconify
-                .with(new FontAwesomeModule())
-                .with(new EntypoModule())
-                .with(new TypiconsModule())
-                .with(new MaterialModule())
-                .with(new MaterialCommunityModule())
-                .with(new MeteoconsModule())
-                .with(new WeathericonsModule())
-                .with(new SimpleLineIconsModule())
-                .with(new IoniconsModule());
+        MonitorTextView();
     }
 
     public void PressSend(View view)
@@ -274,6 +265,20 @@ public class MainActivity extends AppCompatActivity {
 
             public void onNothingSelected(AdapterView<?> adapterView) {
                 return;
+            }
+        });
+    }
+
+    // If textview is clicked, we'll add an edit text box for typing a number in
+    public void MonitorTextView()
+    {
+        TextView textview = (TextView) findViewById(R.id.textViewDelayLength);
+        textview.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v) {
+                EditText editText = (EditText) findViewById(R.id.editTextMessageDelay);
+                editText.setVisibility(View.VISIBLE);
             }
         });
     }

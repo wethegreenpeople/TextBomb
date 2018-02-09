@@ -8,7 +8,9 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="xyz.uraqt.apps.textbomb.MainActivity">
+    tools:context="xyz.uraqt.apps.textbomb.MainActivity"
+    android:orientation="vertical"
+    android:animateLayoutChanges="true">
 
     <Button
         android:id="@+id/buttonStop"
@@ -34,7 +36,9 @@
         android:hint="@string/phoneNumber"
         android:inputType="phone"
         android:selectAllOnFocus="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:drawableLeft="@drawable/phone_image"
+        android:drawablePadding="5dp"/>
 
     <EditText
         android:id="@+id/editTextAmountOfTexts"
@@ -47,7 +51,9 @@
         android:hint="@string/textAmount"
         android:inputType="number"
         android:selectAllOnFocus="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:drawableLeft="@drawable/amount_image"
+        android:drawablePadding="5dp" />
 
     <Button
         android:id="@+id/buttonSend"
@@ -56,49 +62,42 @@
         android:elevation="0dp"
         android:onClick="PressSend"
         android:text="@string/buttonSend"
-        android:layout_marginTop="12dp"
-        android:layout_below="@+id/seekBarMessageDelay"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="68dp" />
 
     <EditText
         android:id="@+id/editTextMessageToSend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/editTextAmountOfTexts"
+        android:drawableLeft="@drawable/message_image"
+        android:drawablePadding="5dp"
         android:ems="10"
         android:hint="@string/messageToSend"
         android:inputType="textPersonName"
         android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:layout_below="@+id/editTextAmountOfTexts"
-        android:layout_alignParentStart="true" />
+        android:singleLine="true" />
 
     <TextView
         android:id="@+id/textViewDelayLength"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
+        android:text="Delay: 0 seconds"
+        android:layout_marginLeft="7dp"
         android:layout_below="@+id/editTextStopMessage"
-        android:layout_marginTop="14dp"
-        android:text="Delay: 0 seconds" />
-
-    <com.joanzapata.iconify.widget.IconTextView
-        android:text="I {fa-heart-o} to {fa-code} on {fa-android}"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"/>
+        android:layout_alignParentStart="true" />
 
     <SeekBar
         android:id="@+id/seekBarMessageDelay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/editTextStopMessage"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignRight="@+id/editTextStopMessage"
-        android:layout_below="@+id/textViewDelayLength"
-        android:max="30"
+        android:max="600"
         android:progress="0"
-        android:visibility="visible" />
+        android:visibility="visible"
+        android:layout_below="@+id/textViewDelayLength"
+        android:layout_toEndOf="@+id/buttonStop" />
 
     <EditText
         android:id="@+id/editTextStopMessage"
@@ -109,6 +108,8 @@
         android:inputType="textPersonName"
         android:selectAllOnFocus="true"
         android:maxLines="1"
+        android:drawableLeft="@drawable/stop_image"
+        android:drawablePadding="5dp"
         android:layout_below="@+id/editTextMessageToSend"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true" />
@@ -121,5 +122,17 @@
         android:layout_below="@+id/editTextAmountOfTexts"
         android:layout_toEndOf="@+id/editTextMessageToSend"
         android:layout_alignBottom="@+id/editTextMessageToSend" />
+
+    <EditText
+        android:id="@+id/editTextMessageDelay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Message Delay"
+        android:inputType="number"
+        android:visibility="visible"
+        android:layout_alignBottom="@+id/buttonSend"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="44dp" />
 
 </RelativeLayout>
