@@ -1,10 +1,10 @@
 <resources>
-    <string name="app_name">Annoy</string>
+    <string name="app_name">Text Bomb</string>
     <string name="phoneNumber">Phone Number</string>
     <string name="textAmount">Amount of texts</string>
     <string name="buttonSend">send</string>
     <string name="messageToSend">Message to send</string>
-    <string name="editTextStopMessage">Stop Message</string>
+    <string name="editTextStopMessage">Defusal Message</string>
     <string name="buttonStop">Stop</string>
 
     <string-array name="sendMessageChoice">

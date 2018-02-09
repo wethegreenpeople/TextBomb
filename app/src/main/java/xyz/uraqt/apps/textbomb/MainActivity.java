@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
@@ -13,11 +14,23 @@ import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.joanzapata.iconify.Iconify;
+import com.joanzapata.iconify.fonts.EntypoModule;
+import com.joanzapata.iconify.fonts.FontAwesomeModule;
+import com.joanzapata.iconify.fonts.IoniconsModule;
+import com.joanzapata.iconify.fonts.MaterialCommunityModule;
+import com.joanzapata.iconify.fonts.MaterialModule;
+import com.joanzapata.iconify.fonts.MeteoconsModule;
+import com.joanzapata.iconify.fonts.SimpleLineIconsModule;
+import com.joanzapata.iconify.fonts.TypiconsModule;
+import com.joanzapata.iconify.fonts.WeathericonsModule;
 
 import java.io.IOException;
 
@@ -25,6 +38,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static android.R.attr.button;
 import static xyz.uraqt.apps.textbomb.MainActivity.handler;
 
 public class MainActivity extends AppCompatActivity {
@@ -38,6 +52,16 @@ public class MainActivity extends AppCompatActivity {
         CheckSMSPermissions();
         UpdateDelayBar();
         MonitorSpinner();
+        Iconify
+                .with(new FontAwesomeModule())
+                .with(new EntypoModule())
+                .with(new TypiconsModule())
+                .with(new MaterialModule())
+                .with(new MaterialCommunityModule())
+                .with(new MeteoconsModule())
+                .with(new WeathericonsModule())
+                .with(new SimpleLineIconsModule())
+                .with(new IoniconsModule());
     }
 
     public void PressSend(View view)
