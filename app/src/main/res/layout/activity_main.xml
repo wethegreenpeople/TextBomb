@@ -33,7 +33,8 @@
         android:ems="10"
         android:hint="@string/phoneNumber"
         android:inputType="phone"
-        android:selectAllOnFocus="true" />
+        android:selectAllOnFocus="true"
+        android:layout_alignParentEnd="true" />
 
     <EditText
         android:id="@+id/editTextAmountOfTexts"
@@ -45,7 +46,8 @@
         android:ems="10"
         android:hint="@string/textAmount"
         android:inputType="number"
-        android:selectAllOnFocus="true" />
+        android:selectAllOnFocus="true"
+        android:layout_alignParentEnd="true" />
 
     <Button
         android:id="@+id/buttonSend"
@@ -62,14 +64,13 @@
         android:id="@+id/editTextMessageToSend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/editTextAmountOfTexts"
         android:ems="10"
         android:hint="@string/messageToSend"
         android:inputType="textPersonName"
         android:selectAllOnFocus="true"
-        android:singleLine="true" />
+        android:singleLine="true"
+        android:layout_below="@+id/editTextAmountOfTexts"
+        android:layout_alignParentStart="true" />
 
     <TextView
         android:id="@+id/textViewDelayLength"
@@ -80,6 +81,11 @@
         android:layout_below="@+id/editTextStopMessage"
         android:layout_marginTop="14dp"
         android:text="Delay: 0 seconds" />
+
+    <com.joanzapata.iconify.widget.IconTextView
+        android:text="I {fa-heart-o} to {fa-code} on {fa-android}"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"/>
 
     <SeekBar
         android:id="@+id/seekBarMessageDelay"
@@ -98,26 +104,22 @@
         android:id="@+id/editTextStopMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/editTextMessageToSend"
         android:ems="10"
         android:hint="@string/editTextStopMessage"
         android:inputType="textPersonName"
         android:selectAllOnFocus="true"
-        android:singleLine="true" />
+        android:maxLines="1"
+        android:layout_below="@+id/editTextMessageToSend"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
 
     <Spinner
         android:id="@+id/spinnerMessageToSend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/editTextStopMessage"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="false"
-        android:layout_alignWithParentIfMissing="false"
+        android:entries="@array/sendMessageChoice"
         android:layout_below="@+id/editTextAmountOfTexts"
-        android:layout_toEndOf="@+id/editTextAmountOfTexts"
-        android:duplicateParentState="false"
-        android:entries="@array/sendMessageChoice" />
+        android:layout_toEndOf="@+id/editTextMessageToSend"
+        android:layout_alignBottom="@+id/editTextMessageToSend" />
 
 </RelativeLayout>
