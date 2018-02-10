@@ -6,6 +6,7 @@
     <string name="messageToSend">Message to send</string>
     <string name="editTextStopMessage">Defusal Message</string>
     <string name="buttonStop">Stop</string>
+    <string name="delayLength">Delay: 0 seconds</string>
 
     <string-array name="sendMessageChoice">
         <item>Custom</item>
