@@ -63,7 +63,17 @@ public class MainActivity extends AppCompatActivity {
 
         String phoneNumber = ((EditText) findViewById(R.id.editTextPhoneNumber)).getText().toString();
         int bombAmount = Integer.parseInt(((EditText) findViewById(R.id.editTextAmountOfTexts)).getText().toString());
-        int delayAmount = ((SeekBar) findViewById(R.id.seekBarMessageDelay)).getProgress();
+        int delayAmount = 0;
+        // Getting the delay amount from either the seeker or edittext depending on whats active
+        if (((SeekBar) findViewById(R.id.seekBarMessageDelay)).getVisibility() == View.VISIBLE)
+        {
+            delayAmount = ((SeekBar) findViewById(R.id.seekBarMessageDelay)).getProgress();
+        }
+        else if (((SeekBar) findViewById(R.id.seekBarMessageDelay)).getVisibility() != View.VISIBLE)
+        {
+            delayAmount =  Integer.parseInt(((EditText) findViewById(R.id.editTextMessageDelay)).getText().toString());
+        }
+
         String messageToSend = ((EditText) findViewById(R.id.editTextMessageToSend)).getText().toString();
         bombDefuse = ((EditText) findViewById(R.id.editTextStopMessage)).getText().toString();
 
@@ -278,7 +288,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 EditText editText = (EditText) findViewById(R.id.editTextMessageDelay);
-                editText.setVisibility(View.VISIBLE);
+                SeekBar seek = (SeekBar) findViewById(R.id.seekBarMessageDelay);
+                if (editText.getVisibility() == View.GONE)
+                {
+                    editText.setVisibility(View.VISIBLE);
+                    seek.setVisibility(View.GONE);
+                }
+                else if (editText.getVisibility() == View.VISIBLE)
+                {
+                    editText.setVisibility(View.GONE);
+                    seek.setVisibility(View.VISIBLE);
+                }
             }
         });
     }
