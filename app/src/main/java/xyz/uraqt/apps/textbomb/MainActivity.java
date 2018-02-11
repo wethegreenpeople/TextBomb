@@ -4,10 +4,13 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.SmsManager;
@@ -44,6 +47,7 @@ import static xyz.uraqt.apps.textbomb.MainActivity.handler;
 public class MainActivity extends AppCompatActivity {
     static String bombDefuse = null;
     static Handler handler = new Handler(); // setting up a handler for a delay
+    public final int PICK_CONTACT = 2015;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         UpdateDelayBar();
         MonitorSpinner();
         MonitorTextView();
+        ContactPicker();
     }
 
     public void PressSend(View view)
@@ -312,6 +317,36 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public void ContactPicker()
+    {
+        (findViewById(R.id.contactButton)).setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+                startActivityForResult(i, PICK_CONTACT);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PICK_CONTACT && resultCode == RESULT_OK) {
+            Uri contactUri = data.getData();
+            Cursor cursor = getContentResolver().query(contactUri, null, null, null, null);
+            cursor.moveToFirst();
+            int column = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+            String phoneNumber = cursor.getString(column);
+            phoneNumber = CleanPhoneNumber(phoneNumber);
+            ((EditText) findViewById(R.id.editTextPhoneNumber)).setText(phoneNumber);
+        }
+    }
+
+    public String CleanPhoneNumber(String phoneNumber)
+    {
+        phoneNumber = phoneNumber.replaceAll("[^0-9]+", "");
+        return phoneNumber;
     }
 }
 
