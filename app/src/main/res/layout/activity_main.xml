@@ -123,17 +123,6 @@
         android:drawablePadding="5dp" />
 
     <Button
-        android:id="@+id/buttonSend"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:elevation="0dp"
-        android:onClick="PressSend"
-        android:text="@string/buttonSend"
-        android:visibility="visible"
-        android:layout_below="@+id/seekBarMessageDelay"
-        android:layout_marginTop="36dp" />
-
-    <Button
         android:id="@+id/buttonStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -144,5 +133,33 @@
         android:visibility="gone"
         android:layout_below="@+id/seekBarMessageDelay"
         android:layout_marginTop="36dp" />
+
+    <ImageButton
+        android:id="@+id/imageButton2"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:background="@null"
+        android:onClick="PressSend"
+        android:scaleType="fitXY"
+        app:srcCompat="@drawable/cherrybomb"
+        android:visibility="visible"
+        android:layout_marginLeft="100dp"
+        android:layout_marginTop="50dp"
+        android:layout_below="@+id/seekBarMessageDelay"
+        android:layout_alignParentStart="true" />
+
+    <ImageButton
+        android:id="@+id/imageButton3"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        app:srcCompat="@drawable/cherrybombcancel"
+        android:scaleType="fitXY"
+        android:background="@null"
+        android:onClick="PressStop"
+        android:visibility="gone"
+        android:layout_marginLeft="100dp"
+        android:layout_marginTop="50dp"
+        android:layout_below="@+id/seekBarMessageDelay"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

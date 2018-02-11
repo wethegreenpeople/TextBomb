@@ -57,46 +57,57 @@ public class MainActivity extends AppCompatActivity {
 
     public void PressSend(View view)
     {
-        InitListener(); // Listener for our defusal message
-        String typeOfMessage = ((Spinner) findViewById(R.id.spinnerMessageToSend)).getSelectedItem().toString();
-        String animal = null;
+        try {
+            InitListener(); // Listener for our defusal message
+            String typeOfMessage = ((Spinner) findViewById(R.id.spinnerMessageToSend)).getSelectedItem().toString();
+            String animal = null;
 
-        String phoneNumber = ((EditText) findViewById(R.id.editTextPhoneNumber)).getText().toString();
-        int bombAmount = Integer.parseInt(((EditText) findViewById(R.id.editTextAmountOfTexts)).getText().toString());
-        int delayAmount = 0;
-        // Getting the delay amount from either the seeker or edittext depending on whats active
-        if (((SeekBar) findViewById(R.id.seekBarMessageDelay)).getVisibility() == View.VISIBLE)
-        {
-            delayAmount = ((SeekBar) findViewById(R.id.seekBarMessageDelay)).getProgress();
-        }
-        else if (((SeekBar) findViewById(R.id.seekBarMessageDelay)).getVisibility() != View.VISIBLE)
-        {
-            delayAmount =  Integer.parseInt(((EditText) findViewById(R.id.editTextMessageDelay)).getText().toString());
-        }
-
-        String messageToSend = ((EditText) findViewById(R.id.editTextMessageToSend)).getText().toString();
-        bombDefuse = ((EditText) findViewById(R.id.editTextStopMessage)).getText().toString();
-
-        // Are we sending a custom message?
-        if (typeOfMessage.equals("Custom"))
-        {
-            if (CheckLimits(phoneNumber, bombAmount, messageToSend))
+            String phoneNumber = ((EditText) findViewById(R.id.editTextPhoneNumber)).getText().toString();
+            int bombAmount = Integer.parseInt(((EditText) findViewById(R.id.editTextAmountOfTexts)).getText().toString());
+            int delayAmount = 0;
+            // Getting the delay amount from either the seeker or edittext depending on whats active
+            if (((SeekBar) findViewById(R.id.seekBarMessageDelay)).getVisibility() == View.VISIBLE)
             {
-                SendCustomMessage(phoneNumber, bombAmount, messageToSend, delayAmount, bombDefuse);
+                delayAmount = ((SeekBar) findViewById(R.id.seekBarMessageDelay)).getProgress();
+            }
+            else if (((SeekBar) findViewById(R.id.seekBarMessageDelay)).getVisibility() != View.VISIBLE)
+            {
+                delayAmount =  Integer.parseInt(((EditText) findViewById(R.id.editTextMessageDelay)).getText().toString());
+            }
+
+            String messageToSend = ((EditText) findViewById(R.id.editTextMessageToSend)).getText().toString();
+            bombDefuse = ((EditText) findViewById(R.id.editTextStopMessage)).getText().toString();
+
+            // Are we sending a custom message?
+            if (typeOfMessage.equals("Custom"))
+            {
+                if (CheckLimits(phoneNumber, bombAmount, messageToSend))
+                {
+                    SendCustomMessage(phoneNumber, bombAmount, messageToSend, delayAmount, bombDefuse);
+                    SwapSendButton(1);
+                }
+            }
+            // We're sending an animal fact
+            else if (!typeOfMessage.equals("Custom"))
+            {
+                // We're taking the first word from our spinner and that's our animal that we're requesting
+                // facts for
+                animal = typeOfMessage.split(" ")[0].toString().toLowerCase();
+
+                GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse, animal, this);
+                animalFact.execute();
                 SwapSendButton(1);
             }
         }
-        // We're sending an animal fact
-        else if (!typeOfMessage.equals("Custom"))
+        catch (NumberFormatException e)
         {
-            // We're taking the first word from our spinner and that's our animal that we're requesting
-            // facts for
-            animal = typeOfMessage.split(" ")[0].toString().toLowerCase();
-
-            GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse, animal, this);
-            animalFact.execute();
-            SwapSendButton(1);
+            Toast.makeText(getApplicationContext(), "Field(s) Missing", Toast.LENGTH_LONG).show();
         }
+        catch (Exception e)
+        {
+            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+        }
+
     }
 
     // Cancels our textbomb
@@ -156,13 +167,13 @@ public class MainActivity extends AppCompatActivity {
     {
         if (swap == 0)
         {
-            findViewById(R.id.buttonSend).setVisibility(View.VISIBLE);
-            findViewById(R.id.buttonStop).setVisibility(View.GONE);
+            findViewById(R.id.imageButton2).setVisibility(View.VISIBLE);
+            findViewById(R.id.imageButton3).setVisibility(View.GONE);
         }
         else if (swap == 1)
         {
-            findViewById(R.id.buttonSend).setVisibility(View.GONE);
-            findViewById(R.id.buttonStop).setVisibility(View.VISIBLE);
+            findViewById(R.id.imageButton2).setVisibility(View.GONE);
+            findViewById(R.id.imageButton3).setVisibility(View.VISIBLE);
         }
     }
 
