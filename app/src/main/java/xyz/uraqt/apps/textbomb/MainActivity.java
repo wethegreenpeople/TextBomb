@@ -27,6 +27,7 @@ import android.widget.Toast;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.fonts.EntypoModule;
 import com.joanzapata.iconify.fonts.FontAwesomeModule;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     public final int PICK_CONTACT = 2015;
 
     private AdView mAdView;
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
         MobileAds.initialize(this, "ca-app-pub-1592176704950004~9006530595");
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
     }
 
     public void PressSend(View view)
@@ -102,6 +105,14 @@ public class MainActivity extends AppCompatActivity {
                     SwapSendButton(1);
                     Toast.makeText(getApplicationContext(), "Text bomb sent", Toast.LENGTH_SHORT).show();
 
+                    Bundle bundle = new Bundle();
+                    bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "Custom Message");
+                    bundle.putString("messageAmount", String.valueOf(bombAmount));
+                    bundle.putString("message", messageToSend);
+                    bundle.putString("defuseMessage", bombDefuse);
+                    bundle.putString("delayAmount", String.valueOf(delayAmount));
+
+                    mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
                 }
             }
             // We're sending an animal fact
@@ -115,6 +126,15 @@ public class MainActivity extends AppCompatActivity {
                     GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse, animal, this);
                     animalFact.execute();
                     SwapSendButton(1);
+
+                    Bundle bundle = new Bundle();
+                    bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "Fact");
+                    bundle.putString("messageAmount", String.valueOf(bombAmount));
+                    bundle.putString("message", animal);
+                    bundle.putString("defuseMessage", bombDefuse);
+                    bundle.putString("delayAmount", String.valueOf(delayAmount));
+
+                    mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
                 }
             }
         }
