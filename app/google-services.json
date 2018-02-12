@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "503780619647",
+    "firebase_url": "https://textbomb-a17b2.firebaseio.com",
+    "project_id": "textbomb-a17b2",
+    "storage_bucket": "textbomb-a17b2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:503780619647:android:3333265f3fff0a70",
+        "android_client_info": {
+          "package_name": "xyz.uraqt.apps.textbomb"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "503780619647-eum5mrkmfj9damlpbqnvbv1q05f2o2og.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "xyz.uraqt.apps.textbomb",
+            "certificate_hash": "01da596aab658de1031aad4baa9a059f2dc2087e"
+          }
+        },
+        {
+          "client_id": "503780619647-lgfbgiu6157fe0t3lp4gu7ohn6klv3me.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaICAe1xhLbA-g0ntoAM7kYfpmkk4wcK0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "503780619647-lgfbgiu6157fe0t3lp4gu7ohn6klv3me.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
