@@ -24,6 +24,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.fonts.EntypoModule;
 import com.joanzapata.iconify.fonts.FontAwesomeModule;
@@ -43,11 +46,14 @@ import okhttp3.Response;
 
 import static android.R.attr.button;
 import static xyz.uraqt.apps.textbomb.MainActivity.handler;
+import static xyz.uraqt.apps.textbomb.R.string.messageToSend;
 
 public class MainActivity extends AppCompatActivity {
     static String bombDefuse = null;
     static Handler handler = new Handler(); // setting up a handler for a delay
     public final int PICK_CONTACT = 2015;
+
+    private AdView mAdView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +64,10 @@ public class MainActivity extends AppCompatActivity {
         MonitorSpinner();
         MonitorTextView();
         ContactPicker();
+        mAdView = (AdView) findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+        MobileAds.initialize(this, "ca-app-pub-1592176704950004~9006530595");
     }
 
     public void PressSend(View view)
@@ -71,11 +81,11 @@ public class MainActivity extends AppCompatActivity {
             int bombAmount = Integer.parseInt(((EditText) findViewById(R.id.editTextAmountOfTexts)).getText().toString());
             int delayAmount = 0;
             // Getting the delay amount from either the seeker or edittext depending on whats active
-            if (((SeekBar) findViewById(R.id.seekBarMessageDelay)).getVisibility() == View.VISIBLE)
+            if ((findViewById(R.id.seekBarMessageDelay)).getVisibility() == View.VISIBLE)
             {
                 delayAmount = ((SeekBar) findViewById(R.id.seekBarMessageDelay)).getProgress();
             }
-            else if (((SeekBar) findViewById(R.id.seekBarMessageDelay)).getVisibility() != View.VISIBLE)
+            else if ((findViewById(R.id.seekBarMessageDelay)).getVisibility() != View.VISIBLE)
             {
                 delayAmount =  Integer.parseInt(((EditText) findViewById(R.id.editTextMessageDelay)).getText().toString());
             }
@@ -90,6 +100,8 @@ public class MainActivity extends AppCompatActivity {
                 {
                     SendCustomMessage(phoneNumber, bombAmount, messageToSend, delayAmount, bombDefuse);
                     SwapSendButton(1);
+                    Toast.makeText(getApplicationContext(), "Text bomb sent", Toast.LENGTH_SHORT).show();
+
                 }
             }
             // We're sending an animal fact
@@ -98,10 +110,12 @@ public class MainActivity extends AppCompatActivity {
                 // We're taking the first word from our spinner and that's our animal that we're requesting
                 // facts for
                 animal = typeOfMessage.split(" ")[0].toString().toLowerCase();
-
-                GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse, animal, this);
-                animalFact.execute();
-                SwapSendButton(1);
+                if (CheckLimits(phoneNumber, bombAmount))
+                {
+                    GetAnimalFact animalFact = new GetAnimalFact(getApplicationContext(), phoneNumber, bombAmount, delayAmount, bombDefuse, animal, this);
+                    animalFact.execute();
+                    SwapSendButton(1);
+                }
             }
         }
         catch (NumberFormatException e)
@@ -131,11 +145,13 @@ public class MainActivity extends AppCompatActivity {
         {
             passed = false;
             Toast.makeText(getApplicationContext(), "Invalid phone number. Re-enter valid 10 digit phone number", Toast.LENGTH_LONG).show();
+            return passed;
         }
-        if (bombAmount > 50)
+        if (bombAmount > 100)
         {
             passed = false;
-            Toast.makeText(getApplicationContext(), "Cannot send more than 50 texts at a time", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Cannot send more than 100 texts at a time", Toast.LENGTH_LONG).show();
+            return passed;
         }
 
         return passed;
@@ -150,16 +166,19 @@ public class MainActivity extends AppCompatActivity {
         {
             passed = false;
             Toast.makeText(getApplicationContext(), "Invalid phone number. Re-enter valid 10 digit phone number", Toast.LENGTH_LONG).show();
+            return passed;
         }
-        if (bombAmount > 50)
+        if (bombAmount > 100)
         {
             passed = false;
-            Toast.makeText(getApplicationContext(), "Cannot send more than 50 texts at a time", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Cannot send more than 100 texts at a time", Toast.LENGTH_LONG).show();
+            return passed;
         }
         if (messageToSend.length() > 140)
         {
             passed = false;
             Toast.makeText(getApplicationContext(), "Bomb message cannot be greater than 140 characters", Toast.LENGTH_LONG).show();
+            return passed;
         }
 
         return passed;
@@ -219,8 +238,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         handler.post(runnable);
-
-        Toast.makeText(getApplicationContext(), "Text bomb sent", Toast.LENGTH_SHORT).show();
     }
 
     public void InitListener()
