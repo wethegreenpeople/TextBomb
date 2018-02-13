@@ -15,7 +15,7 @@ public class SmsListener extends BroadcastReceiver {
         String bombDefuse = MainActivity.bombDefuse;
         if (Telephony.Sms.Intents.SMS_RECEIVED_ACTION.equals(intent.getAction())) {
             for (SmsMessage smsMessage : Telephony.Sms.Intents.getMessagesFromIntent(intent)) {
-                messageBody = smsMessage.getMessageBody();
+                messageBody = smsMessage.getMessageBody().toLowerCase();
             }
         }
     }

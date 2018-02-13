@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             String messageToSend = ((EditText) findViewById(R.id.editTextMessageToSend)).getText().toString();
-            bombDefuse = ((EditText) findViewById(R.id.editTextStopMessage)).getText().toString();
+            bombDefuse = ((EditText) findViewById(R.id.editTextStopMessage)).getText().toString().toLowerCase();
 
             // Are we sending a custom message?
             if (typeOfMessage.equals("Custom"))
@@ -236,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
                 // If we get our defuseal text
                 if (bombDefuse.equals(SmsListener.messageBody))
                 {
+                    SwapSendButton(0);
                     Toast.makeText(getApplicationContext(), "Bomb Defused", Toast.LENGTH_SHORT).show();
                 }
                 else if (count < bombAmount && !bombDefuse.equals(SmsListener.messageBody))
@@ -453,8 +454,8 @@ class GetAnimalFact extends AsyncTask<Void, Void, String[]> {
                 }
                 if (bombDefuse.equals(SmsListener.messageBody))
                 {
+                    main.SwapSendButton(0);
                     Toast.makeText(ccontext, "Bomb Defused", Toast.LENGTH_SHORT).show();
-                    Log.i("Sending", "Textbomb defused");
                 }
                 else if (count < bombAmount && !bombDefuse.equals(SmsListener.messageBody))
                 {
