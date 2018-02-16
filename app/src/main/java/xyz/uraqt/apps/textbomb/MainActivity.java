@@ -2,7 +2,9 @@ package xyz.uraqt.apps.textbomb;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Typeface;
@@ -11,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.provider.ContactsContract;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.SmsManager;
@@ -46,6 +49,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import static android.R.attr.button;
+import static android.R.attr.version;
 import static xyz.uraqt.apps.textbomb.MainActivity.handler;
 import static xyz.uraqt.apps.textbomb.R.string.messageToSend;
 
@@ -66,11 +70,13 @@ public class MainActivity extends AppCompatActivity {
         MonitorSpinner();
         MonitorTextView();
         ContactPicker();
-        mAdView = (AdView) findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
-        MobileAds.initialize(this, "ca-app-pub-1592176704950004~9006530595");
+        //mAdView = (AdView) findViewById(R.id.adView);
+        //AdRequest adRequest = new AdRequest.Builder().build();
+        //mAdView.loadAd(adRequest);
+        //MobileAds.initialize(this, "ca-app-pub-1592176704950004~9006530595");
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        CheckForUpdates update = new CheckForUpdates(MainActivity.this);
+        update.execute();
     }
 
     public void PressSend(View view)
@@ -386,6 +392,27 @@ public class MainActivity extends AppCompatActivity {
         phoneNumber = phoneNumber.replaceAll("[^0-9]+", "");
         return phoneNumber;
     }
+
+    public void UpdateAlert()
+    {
+        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+        alertDialog.setTitle("Update");
+        alertDialog.setMessage("Would you like to update the app?");
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+        alertDialog.show();
+    }
 }
 
 // Grabbing our animal fact
@@ -485,5 +512,108 @@ class GetAnimalFact extends AsyncTask<Void, Void, String[]> {
         handler.post(runnable);
 
         Toast.makeText(ccontext, "Text bomb sent", Toast.LENGTH_SHORT).show();
+    }
+}
+
+class CheckForUpdates extends AsyncTask<Void, Void, String>
+{
+    private Context context;
+    CheckForUpdates(Context context)
+    {
+        this.context = context;
+    }
+
+    @Override
+    protected String doInBackground(Void ... params) {
+        OkHttpClient httpClient = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("https://github.com/wethegreenpeople/TextBomb/releases/latest")
+                .build();
+
+        Response response = null;
+        try
+        {
+            response = httpClient.newCall(request).execute();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        String url = response.request().url().toString();
+        String[] splitUrl = url.split("/");
+        String version = splitUrl[splitUrl.length - 1];
+
+        return version;
+    }
+
+    @Override
+    protected void onPostExecute(String version)
+    {
+        UpdateAppDialog(context, version);
+    }
+
+    public void UpdateAppDialog(Context context, String version)
+    {
+        PackageInfo pInfo = null;
+        try {
+            pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        String currentVersion = pInfo.versionName;
+        AlertDialog alertDialog = new AlertDialog.Builder(context).create();
+        alertDialog.setTitle("Update Available");
+        alertDialog.setMessage(currentVersion + " " + version);
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+        alertDialog.show();
+        if (CompareVersions(currentVersion, version) == true)
+        {
+            alertDialog = new AlertDialog.Builder(context).create();
+            alertDialog.setTitle("Update Available");
+            alertDialog.setMessage("Would you like to update?");
+            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+            alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+
+            alertDialog.show();
+        }
+    }
+
+    public boolean CompareVersions(String currentVersion, String recentVersion)
+    {
+        boolean onOldVersion = false;
+        String[] cv = currentVersion.split(".");
+        String[] rv = recentVersion.split(".");
+
+        for (int i = 0; i < cv.length; ++i)
+        {
+            if (Integer.parseInt(rv[i]) > Integer.parseInt(cv[i]))
+            {
+                onOldVersion = true;
+            }
+        }
+
+        return onOldVersion;
     }
 }
