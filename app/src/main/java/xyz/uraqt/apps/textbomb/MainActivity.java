@@ -1,9 +1,12 @@
 package xyz.uraqt.apps.textbomb;
 
 import android.Manifest;
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -11,8 +14,10 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.ContactsContract;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -41,7 +46,10 @@ import com.joanzapata.iconify.fonts.MeteoconsModule;
 import com.joanzapata.iconify.fonts.SimpleLineIconsModule;
 import com.joanzapata.iconify.fonts.TypiconsModule;
 import com.joanzapata.iconify.fonts.WeathericonsModule;
+import com.nabinbhandari.android.permissions.PermissionHandler;
+import com.nabinbhandari.android.permissions.Permissions;
 
+import java.io.File;
 import java.io.IOException;
 
 import okhttp3.OkHttpClient;
@@ -65,7 +73,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        CheckSMSPermissions();
+        Permissions.check(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.SEND_SMS},
+                "Storage permissions are required to enable future app updates.\n\n SMS Permissions are needed for the entire purpose of this app",
+                new Permissions.Options().setSettingsDialogTitle("Permissions").setRationaleDialogTitle("Info"),
+                new PermissionHandler() {
+                    public void onGranted() {
+                        CheckForUpdates update = new CheckForUpdates(MainActivity.this);
+                        update.execute();
+                    }
+                });
         UpdateDelayBar();
         MonitorSpinner();
         MonitorTextView();
@@ -75,8 +91,6 @@ public class MainActivity extends AppCompatActivity {
         //mAdView.loadAd(adRequest);
         //MobileAds.initialize(this, "ca-app-pub-1592176704950004~9006530595");
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-        CheckForUpdates update = new CheckForUpdates(MainActivity.this);
-        update.execute();
     }
 
     public void PressSend(View view)
@@ -273,22 +287,6 @@ public class MainActivity extends AppCompatActivity {
         Intent listener = new Intent(this, SmsListener.class);
         listener.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startService(listener);
-    }
-
-    public boolean CheckSMSPermissions() {
-        int hasSendSMSPermission = 0;
-        boolean activePermissions = false; // this is the variable we're returning
-        // Check if we're Marshmellow or  over
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            hasSendSMSPermission = checkSelfPermission(Manifest.permission.SEND_SMS);
-            // If we don't have permissions request them
-            if (hasSendSMSPermission != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.SEND_SMS}, 130);
-            } else if (hasSendSMSPermission == PackageManager.PERMISSION_GRANTED) {
-                return activePermissions;
-            }
-        }
-        return activePermissions;
     }
 
     public void UpdateDelayBar()
@@ -552,7 +550,7 @@ class CheckForUpdates extends AsyncTask<Void, Void, String>
         UpdateAppDialog(context, version);
     }
 
-    public void UpdateAppDialog(Context context, String version)
+    public void UpdateAppDialog(Context context, final String version)
     {
         PackageInfo pInfo = null;
         try {
@@ -561,32 +559,17 @@ class CheckForUpdates extends AsyncTask<Void, Void, String>
             e.printStackTrace();
         }
         String currentVersion = pInfo.versionName;
-        AlertDialog alertDialog = new AlertDialog.Builder(context).create();
-        alertDialog.setTitle("Update Available");
-        alertDialog.setMessage(currentVersion + " " + version);
-        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
 
-        alertDialog.show();
         if (CompareVersions(currentVersion, version) == true)
         {
+            AlertDialog alertDialog = new AlertDialog.Builder(context).create();
             alertDialog = new AlertDialog.Builder(context).create();
             alertDialog.setTitle("Update Available");
             alertDialog.setMessage("Would you like to update?");
             alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
+                            DownloadUpdate(version);
                         }
                     });
             alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL",
@@ -603,17 +586,66 @@ class CheckForUpdates extends AsyncTask<Void, Void, String>
     public boolean CompareVersions(String currentVersion, String recentVersion)
     {
         boolean onOldVersion = false;
-        String[] cv = currentVersion.split(".");
-        String[] rv = recentVersion.split(".");
+        String[] cv = currentVersion.split("\\.");
+        String[] rv = recentVersion.split("\\.");
 
         for (int i = 0; i < cv.length; ++i)
         {
             if (Integer.parseInt(rv[i]) > Integer.parseInt(cv[i]))
             {
                 onOldVersion = true;
+                return onOldVersion;
             }
         }
 
         return onOldVersion;
+    }
+
+    public void DownloadUpdate(String version)
+    {
+        //get destination to update file and set Uri
+        //TODO: First I wanted to store my update .apk file on internal storage for my app but apparently android does not allow you to open and install
+        //aplication with existing package from there. So for me, alternative solution is Download directory in external storage. If there is better
+        //solution, please inform us in comment
+        String destination = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/";
+        String fileName = "textbomb.apk";
+        destination += fileName;
+        final Uri uri = Uri.parse("file://" + destination);
+        Log.d("textbomb.apk", "Dest: " + uri);
+
+        //Delete update file if exists
+        File file = new File(destination);
+        if (file.exists())
+            //file.delete() - test this, I think sometimes it doesnt work
+            file.delete();
+
+        //get url of app on server
+        String url = "https://github.com/wethegreenpeople/TextBomb/releases/download/" + version + "/textbomb.apk";
+
+        //set downloadmanager
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        request.setDescription("Textbomb");
+        request.setTitle("Textbomb");
+
+        //set destination
+        request.setDestinationUri(uri);
+
+        // get download service and enqueue file
+        final DownloadManager manager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+        final long downloadId = manager.enqueue(request);
+
+        //set BroadcastReceiver to install app when .apk is downloaded
+        BroadcastReceiver onComplete = new BroadcastReceiver() {
+            public void onReceive(Context ctxt, Intent intent) {
+                File apkFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/textbomb.apk");
+                intent = new Intent(Intent.ACTION_VIEW);
+                Uri fileUri = android.support.v4.content.FileProvider.getUriForFile(context, context.getPackageName() + ".provider", apkFile);
+                intent.setDataAndType(fileUri, "application/vnd.android.package-archive");
+                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                ctxt.startActivity(intent);
+            }
+        };
+        //register receiver for when .apk download is compete
+        context.registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }
 }
