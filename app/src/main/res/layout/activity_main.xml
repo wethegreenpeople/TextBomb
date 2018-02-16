@@ -54,10 +54,11 @@
         android:drawablePadding="5dp"
         android:ems="10"
         android:hint="@string/messageToSend"
-        android:inputType="textPersonName"
+        android:inputType="textPersonName|textMultiLine"
         android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:visibility="visible" />
+        android:visibility="visible"
+        android:maxLines="4"
+        android:scrollHorizontally="false"/>
 
     <Spinner
         android:id="@+id/spinnerMessageToSend"
