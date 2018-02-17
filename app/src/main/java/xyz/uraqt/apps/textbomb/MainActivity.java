@@ -51,6 +51,7 @@ import com.nabinbhandari.android.permissions.Permissions;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -315,6 +316,17 @@ public class MainActivity extends AppCompatActivity {
     private void MonitorSpinner()
     {
         Spinner spinner = (Spinner) findViewById(R.id.spinnerMessageToSend);
+        try {
+            Field popup = Spinner.class.getDeclaredField("mPopup");
+            popup.setAccessible(true);
+            // Get private mPopup member variable and try cast to ListPopupWindow
+            android.widget.ListPopupWindow popupWindow = (android.widget.ListPopupWindow) popup.get(spinner);
+            // Set popupWindow height to 500px
+            popupWindow.setHeight(650);
+        }
+        catch (NoClassDefFoundError | ClassCastException | NoSuchFieldException | IllegalAccessException e) {
+            // silently fail...
+        }
         final EditText message = (EditText) findViewById(R.id.editTextMessageToSend);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -389,27 +401,6 @@ public class MainActivity extends AppCompatActivity {
     {
         phoneNumber = phoneNumber.replaceAll("[^0-9]+", "");
         return phoneNumber;
-    }
-
-    public void UpdateAlert()
-    {
-        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-        alertDialog.setTitle("Update");
-        alertDialog.setMessage("Would you like to update the app?");
-        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-
-        alertDialog.show();
     }
 }
 
